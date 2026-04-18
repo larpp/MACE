@@ -1,2 +1,1 @@
-# mace
-MACE: A Misclassification-Aware Framework for Image Classification Evaluation
+# MACE: A Misclassification-Aware Framework for Image Classification Evaluation
