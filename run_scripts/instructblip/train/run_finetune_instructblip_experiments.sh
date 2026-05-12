@@ -10,7 +10,7 @@ benchmark=$1
 experiment=$2
 
 # Setup
-cd /root/InstructBLIP_PEFT
+cd /root/MACE
 # Install dependencies
 apt update
 apt install default-jdk -y

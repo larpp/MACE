@@ -94,6 +94,7 @@ def main():
     model = task.build_model(cfg)
 
     runner = get_runner_class(cfg)(
+        # cfg=cfg, job_id=job_id, task=task, model=model, datasets=datasets, output_dir_name=cfg.run_cfg.output_dir_name
         cfg=cfg, job_id=job_id, task=task, model=model, datasets=datasets
     )
     runner.train()

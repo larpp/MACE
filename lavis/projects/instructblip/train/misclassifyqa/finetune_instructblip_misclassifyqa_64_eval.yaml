@@ -1,0 +1,93 @@
+model:
+  arch: blip2_vicuna_instruct_qformer_llm_lora
+  model_type: vicuna7b
+  load_pretrained: True #pretrain from scratch
+  pretrained: "https://storage.googleapis.com/sfr-vision-language-research/LAVIS/models/InstructBLIP/instruct_blip_vicuna7b_trimmed.pth"
+  freeze_vit: True
+  max_txt_len: 512
+  max_output_txt_len: 16
+  # LLM PEFT parameters
+  llm_lora_r: 8
+  llm_lora_apply: all
+  # qformer PEFT parameters
+  lora_r: 8
+  lora_alpha: 8
+  lora_dropout: 0
+  self_attention_qv_lora: True
+  self_attention_output_lora: False
+  ffn_lora: True
+  qformer_crossattention_lora_q: True
+  qformer_crossattention_lora_k: True
+  qformer_crossattention_lora_v: True
+  qformer_crossattention_lora_o: True
+
+  load_finetuned: True
+  finetuned: "/home/InstructBLIP_PEFT/output/results/misclassifyqa/misclassifyqa_64/2026/checkpoint_4.pth"
+
+
+datasets:
+  misclassifyqa:
+    train_samples_portion: all
+    vis_processor:
+      train:
+        name: "blip2_image_train"
+        image_size: 224
+      eval:
+        name: "blip_image_eval"
+        image_size: 224
+    text_processor:
+      train:
+        name: "instruct_blip_question"
+      eval:
+        name: "instruct_blip_question"
+    step: 1
+
+run:
+  task: misclassifyqa
+  # optimizer
+  lr_sched: "linear_decay_lr"
+  init_lr: 1e-4 # 5e-4
+  min_lr: 0
+  warmup_lr: 1e-4 # 5e-4
+  warmup_steps: 0
+
+  weight_decay: 0.05
+  max_epoch: 5 # 15
+  batch_size_train: 4 # 32는 메모리 초과
+  accum_grad_iters: 2 # 2
+  batch_size_eval: 4 # 4
+  num_workers: 4
+
+  # inference-specific
+  inference_method: "generate"
+
+  # 얘네를 적절히 잘 조절해 줘야함
+  # max_len: 60
+  max_len: 20
+  # min_len: 2
+  min_len: 1
+  num_beams: 5 # 3 에서 5로 늘리니까 훈련 시간이 길어짐 / 여러 가지 경로로 탐색 / num_captions보다 크거나 같아야한다.
+  length_penalty: 0.0 # 1보다 작으면 짧은 문장 선호
+  num_captions: 1
+  do_sample: False
+  top_p: 1.0
+  temperature: 1.0
+
+  step: 1
+
+  seed: 42
+  output_dir: "/home/InstructBLIP_PEFT/output/results/misclassifyqa/misclassifyqa_64"
+  # output_dir_name: "step1_full_results"
+
+  amp: True
+  resume_ckpt_path: null
+
+  evaluate: True # True로 하면 evaluate만 함
+  train_splits: ["train"]
+  # valid_splits: ["val"]
+  test_splits: ["test"]
+
+  device: "cuda"
+  world_size: 2 # 1
+  dist_url: "env://"
+  distributed: True

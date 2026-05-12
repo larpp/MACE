@@ -48,7 +48,15 @@ class BaseModel(nn.Module):
         else:
             state_dict = checkpoint
 
+        # <CoCoOp>
+        # if "prompt_learner.token_prefix" in state_dict.keys():
+        #     del state_dict['prompt_learner.token_prefix']
+
+        # if "prompt_learner.token_suffix" in state_dict.keys():
+        #     del state_dict['prompt_learner.token_suffix']
+
         msg = self.load_state_dict(state_dict, strict=False)
+        # msg = self.load_state_dict(state_dict, strict=True)
 
         logging.info("Missing keys {}".format(msg.missing_keys))
         logging.info("load checkpoint from %s" % url_or_filename)

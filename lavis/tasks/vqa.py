@@ -29,6 +29,12 @@ class VQATask(BaseTask):
         num_ans_candidates,
         inference_method="rank",
         prompt="",
+        num_captions=1,
+        do_sample=False,
+        step=1,
+        top_p=0.9,
+        temperature=1.0,
+        length_penalty=1.0
     ):
         super().__init__()
 
@@ -40,8 +46,15 @@ class VQATask(BaseTask):
         self.inference_method = inference_method
         self.num_ans_candidates = num_ans_candidates
         self.prompt = prompt
+        self.num_captions = num_captions
+        self.do_sample = do_sample
+        self.top_p = top_p
+        self.temperature = temperature
+        self.length_penalty = length_penalty
 
         self.answer_list = None
+
+        self.step = step
 
         self.ques_files = dict()
         self.anno_files = dict()
@@ -53,6 +66,12 @@ class VQATask(BaseTask):
         num_beams = run_cfg.get("num_beams", 3)
         max_len = run_cfg.get("max_len", 10)
         min_len = run_cfg.get("min_len", 1)
+        num_captions = run_cfg.get("num_captions", 1)
+        do_sample = run_cfg.get("do_sample", False)
+        top_p = run_cfg.get("top_p", 0.9)
+        temperature = run_cfg.get("temperature", 1.0)
+        length_penalty = run_cfg.get("length_penalty", 1.0)
+        step = run_cfg.get("step", 2)
 
         evaluate = run_cfg.get("evaluate", False)
 
@@ -68,6 +87,12 @@ class VQATask(BaseTask):
             num_ans_candidates=num_ans_candidates,
             inference_method=inference_method,
             prompt=prompt,
+            num_captions=num_captions,
+            do_sample=do_sample,
+            top_p=top_p,
+            temperature=temperature,
+            length_penalty=length_penalty,
+            step=step
         )
 
     def build_datasets(self, cfg):
@@ -679,3 +704,125 @@ class IconQATask(VQATask):
         logging.info(metrics)
 
         return metrics
+    
+
+@registry.register_task("misclassifyqa")
+class MisclassifyQATask(VQATask):
+    
+    def build_datasets(self, cfg):
+        datasets = super().build_datasets(cfg)
+
+        for dataset in datasets.values():
+            for split in dataset:
+                try:
+                    self.answer_list = dataset[split].answer_list
+                except AttributeError:
+                    # if answer_list is not provided, then set it to None
+                    pass
+
+        if len(self.ques_files) > 0:
+            assert len(self.ques_files) == len(
+                self.anno_files
+            ), "Only support one split for evaluation."
+
+        return datasets
+
+    def valid_step(self, model, samples):
+        # make predicted answers
+        answers = model.predict_answers(
+            samples=samples,
+            answer_list=self.answer_list,
+            inference_method=self.inference_method,
+            num_beams=self.num_beams,
+            max_len=self.max_len,
+            min_len=self.min_len,
+            num_ans_candidates=self.num_ans_candidates,
+            prompt=self.prompt,
+            use_nucleus_sampling=self.do_sample,
+            num_captions=self.num_captions,
+            top_p=self.top_p,
+            temperature=self.temperature,
+            length_penalty=self.length_penalty
+        )
+        # answers = model.generate(
+        #     samples=samples,
+        #     num_beams=self.num_beams,
+        #     max_length=self.max_len,
+        #     min_length=self.min_len
+        # )
+        pred_qa_pairs = []
+
+
+        question_id = samples["question_id"]
+        gt_answers = samples["text_output"]
+        # img_names = samples["image_name"]
+        for pred_answer, ques_id, gt_answer in zip(answers, question_id, gt_answers):
+            # ques_id = int(ques_id)
+            pred_qa_pairs.append({"question_id": ques_id, "pred_ans": pred_answer, "gt_ans": gt_answer})
+
+        return pred_qa_pairs
+
+
+    def after_evaluation(self, val_result, split_name, **kwargs):
+        result_file = self.save_result(
+            val_result,
+            result_dir=registry.get_path("result_dir"),
+            filename=f"{split_name}_misclassifyqa_result",
+            remove_duplicate="question_id", # remove_duplicate=""
+        )
+        
+        if split_name == 'val':
+            metrics = self._report_accuracy_metrics(result_file=result_file, split=split_name)
+        elif split_name == 'test':
+            # 1-step : Accuracy metric
+            if self.step == 1:
+                metrics = self._report_accuracy_metrics(result_file=result_file, split=split_name)
+
+            # 2-step : Caption metric
+            elif self.step == 2:
+                metrics = self._report_caption_metrics(result_file=result_file, split=split_name)
+        else:
+            metrics = None 
+        return metrics
+    
+
+    @dist_utils.main_process
+    def _report_accuracy_metrics(self, result_file, split):
+        from data import utils
+
+        results = json.load(open(result_file, "r"))
+        
+        jaccard_similarity = utils.jaccard_similarity_from_json(results)
+        precision, recall, f1 = utils.precision_recall_f1_from_json(results)
+        emr = utils.subset_accuracy_from_json(results)
+        hamming_loss = utils.hamming_loss_from_json(results)
+
+
+        metrics = {
+            "jaccard_similarity": f"{jaccard_similarity:.3f}",
+            "precision": f"{precision:.3f}",
+            "recall": f"{recall:.3f}",
+            "f1_score": f"{f1:.3f}",
+            "exact_match_ratio": f"{emr:.3f}",
+            "hamming_loss": f"{hamming_loss:.3f}"
+        }
+
+        with open(
+            os.path.join(registry.get_path("output_dir"), f"log.txt"), "a"
+        ) as f:
+            f.write(json.dumps(metrics) + "\n")
+
+        logging.info(metrics)
+
+        return metrics
+
+
+    @dist_utils.main_process
+    def _report_caption_metrics(self, result_file, split):
+        from data import utils
+
+        coco_gt_path, results_file = utils.convert_to_coco_format(result_file)
+
+        coco_test = utils.coco_caption_eval(coco_gt_path, results_file)
+
+        return coco_test

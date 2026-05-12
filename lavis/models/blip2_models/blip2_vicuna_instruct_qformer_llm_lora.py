@@ -55,6 +55,7 @@ class Blip2VicunaInstructQformerLLMLoRA(Blip2Base):
         qformer_text_input=True,
         llm_lora_r=8,
         llm_lora_apply="attn",
+        num_classes=8
     ):
         super().__init__()
         transformers_version = version.parse(transformers.__version__)
@@ -150,6 +151,11 @@ class Blip2VicunaInstructQformerLLMLoRA(Blip2Base):
         self.llm_proj = nn.Linear(
             self.Qformer.config.hidden_size, self.llm_model.config.hidden_size
         )
+        # self.num_classes = num_classes
+        # self.classifier = nn.Linear(
+        #     self.llm_model.lm_head.out_features, self.num_classes
+        # )
+        # self.loss_fn = nn.BCEWithLogitsLoss()
 
         self.max_txt_len = max_txt_len
         self.max_output_txt_len = max_output_txt_len
@@ -184,6 +190,70 @@ class Blip2VicunaInstructQformerLLMLoRA(Blip2Base):
         llm_tokens['input_ids'] = torch.stack(llm_tokens['input_ids'])
         llm_tokens['attention_mask'] = torch.stack(llm_tokens['attention_mask'])
         return llm_tokens, input_part_targets_len
+
+    # 다중 핫 인코딩 변환 함수
+    def multi_hot_encode(self, targets):
+        import numpy as np
+        # 클래스 리스트 (a부터 h까지)
+        classes = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
+        # 클래스별 인덱스 매핑
+        class_to_index = {cls: idx for idx, cls in enumerate(classes)}
+        num_classes = len(class_to_index)
+        encoded_targets = np.zeros((len(targets), num_classes), dtype=int)
+        
+        for i, target in enumerate(targets):
+            # 각 문자열을 ','로 분리하여 처리
+            labels = target.split(', ')
+            for label in labels:
+                if label in class_to_index:
+                    encoded_targets[i, class_to_index[label]] = 1
+        return encoded_targets
+
+    def decode_multi_hot(self, batch_multi_hot_vectors):
+        """
+        배치 형태의 Multi-Hot Encoding 벡터를 클래스 이름 리스트로 변환
+        :param batch_multi_hot_vectors: [batch_size, num_classes] 형태의 Multi-Hot Encoding 벡터
+        :param classes: 클래스 이름 리스트 (e.g., ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'])
+        :return: 각 배치의 Multi-Hot Encoding 벡터를 변환한 클래스 이름 리스트
+                (e.g., [['a', 'c'], ['d'], ['b', 'e']])
+        """
+        classes = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
+        decoded_batches = []
+        for multi_hot_vector in batch_multi_hot_vectors:
+            decoded_classes = [classes[i] for i, value in enumerate(multi_hot_vector) if value == 1]
+            decoded_batches.append(decoded_classes)
+        return decoded_batches
+
+    def focal_loss(self, logits, targets, gamma=2.0):
+        """
+        Focal Loss 구현
+        :param logits: 모델의 로짓 (raw output) [batch_size, num_classes]
+        :param targets: 정답 레이블 (multi-hot encoded) [batch_size, num_classes]
+        :param alpha: 클래스 가중치 (Tensor) [num_classes]
+        :param gamma: Focal Loss의 초매개변수 (float)
+        :return: Focal Loss 값
+        """
+        # 클래스 비율 정의
+        class_frequencies = torch.tensor([62.437426, 4.223173, 4.732866, 13.534177, 
+                                   2.056976, 2.921635, 6.653318, 3.431328])
+
+        # 클래스 가중치 계산 (1 / class frequency)
+        alpha = 1.0 / class_frequencies
+        alpha = alpha / alpha.sum()  # 정규화
+        alpha = alpha.to(device=logits.device, dtype=logits.dtype)
+
+        # Sigmoid로 확률로 변환
+        probs = torch.sigmoid(logits)  # [batch_size, num_classes]
+        
+        # 정답일 때 확률 p_t 계산
+        p_t = probs * targets + (1 - probs) * (1 - targets)  # [batch_size, num_classes]
+        
+        # Focal Loss 계산
+        focal_weight = alpha * (1 - p_t) ** gamma
+        bce_loss = self.loss_fn(logits, targets)  # [batch_size, num_classes]
+        focal_loss = focal_weight * bce_loss
+        
+        return focal_loss.mean()
 
     def forward(self, samples):
         # print('-----------------')
@@ -226,7 +296,7 @@ class Blip2VicunaInstructQformerLLMLoRA(Blip2Base):
                 return_dict=True,
             )
 
-        inputs_llm = self.llm_proj(query_output.last_hidden_state[:,:query_tokens.size(1),:])
+        inputs_llm = self.llm_proj(query_output.last_hidden_state[:,:query_tokens.size(1),:]) # query tokens
         atts_llm = torch.ones(inputs_llm.size()[:-1], dtype=torch.long).to(image.device)
 
         self.llm_tokenizer.padding_side = "right"
@@ -284,6 +354,18 @@ class Blip2VicunaInstructQformerLLMLoRA(Blip2Base):
 
         loss = outputs.loss
 
+        # # BCE Loss
+        # logits = self.classifier(outputs.logits.mean(dim=1))
+        # # mean pooling
+        # # pooled_logits = logits.mean(dim=1)
+        # encoded_targets = self.multi_hot_encode(samples['text_output'])
+        # encoded_targets = torch.tensor(encoded_targets)
+        # encoded_targets = encoded_targets.to(device=logits.device, dtype=logits.dtype)
+        # # loss = self.loss_fn(logits, encoded_targets)
+
+        # # Focal Loss
+        # loss = self.focal_loss(logits, encoded_targets)
+
         return {"loss": loss}
 
     @torch.no_grad()
@@ -337,60 +419,60 @@ class Blip2VicunaInstructQformerLLMLoRA(Blip2Base):
             Qformer_atts = torch.cat([query_atts, text_Qformer.attention_mask], dim=1)
 
         # For video data
-        if image.dim() == 5:
-            inputs_llm, atts_llm = [], []
-            for j in range(image.size(2)):
-                this_frame = image[:,:,j,:,:]
-                with self.maybe_autocast():
-                    frame_embeds = self.ln_vision(self.visual_encoder(this_frame))
-                frame_atts = torch.ones(frame_embeds.size()[:-1], dtype=torch.long).to(image.device)
+        # if image.dim() == 5:
+        #     inputs_llm, atts_llm = [], []
+        #     for j in range(image.size(2)):
+        #         this_frame = image[:,:,j,:,:]
+        #         with self.maybe_autocast():
+        #             frame_embeds = self.ln_vision(self.visual_encoder(this_frame))
+        #         frame_atts = torch.ones(frame_embeds.size()[:-1], dtype=torch.long).to(image.device)
 
-                if self.qformer_text_input:
-                    frame_query_output = self.Qformer.bert(
-                        text_Qformer.input_ids,
-                        attention_mask=Qformer_atts,
-                        query_embeds=query_tokens,
-                        encoder_hidden_states=frame_embeds,
-                        encoder_attention_mask=frame_atts,
-                        return_dict=True,
-                    )
-                else:
-                    frame_query_output = self.Qformer.bert(
-                        query_embeds=query_tokens,
-                        encoder_hidden_states=frame_embeds,
-                        encoder_attention_mask=frame_atts,
-                        return_dict=True,
-                    )
-                frame_inputs_llm = self.llm_proj(frame_query_output.last_hidden_state[:,:query_tokens.size(1),:])
-                frame_atts_llm = torch.ones(frame_inputs_llm.size()[:-1], dtype=torch.long).to(image.device)
-                inputs_llm.append(frame_inputs_llm)
-                atts_llm.append(frame_atts_llm)
-            inputs_llm = torch.cat(inputs_llm, dim=1)
-            atts_llm = torch.cat(atts_llm, dim=1)
+        #         if self.qformer_text_input:
+        #             frame_query_output = self.Qformer.bert(
+        #                 text_Qformer.input_ids,
+        #                 attention_mask=Qformer_atts,
+        #                 query_embeds=query_tokens,
+        #                 encoder_hidden_states=frame_embeds,
+        #                 encoder_attention_mask=frame_atts,
+        #                 return_dict=True,
+        #             )
+        #         else:
+        #             frame_query_output = self.Qformer.bert(
+        #                 query_embeds=query_tokens,
+        #                 encoder_hidden_states=frame_embeds,
+        #                 encoder_attention_mask=frame_atts,
+        #                 return_dict=True,
+        #             )
+        #         frame_inputs_llm = self.llm_proj(frame_query_output.last_hidden_state[:,:query_tokens.size(1),:])
+        #         frame_atts_llm = torch.ones(frame_inputs_llm.size()[:-1], dtype=torch.long).to(image.device)
+        #         inputs_llm.append(frame_inputs_llm)
+        #         atts_llm.append(frame_atts_llm)
+        #     inputs_llm = torch.cat(inputs_llm, dim=1)
+        #     atts_llm = torch.cat(atts_llm, dim=1)
+        # else:
+        with self.maybe_autocast():
+            image_embeds = self.ln_vision(self.visual_encoder(image))
+        image_atts = torch.ones(image_embeds.size()[:-1], dtype=torch.long).to(image.device)
+
+        if self.qformer_text_input:
+            query_output = self.Qformer.bert(
+                text_Qformer.input_ids,
+                attention_mask=Qformer_atts,
+                query_embeds=query_tokens,
+                encoder_hidden_states=image_embeds,
+                encoder_attention_mask=image_atts,
+                return_dict=True,
+            )
         else:
-            with self.maybe_autocast():
-                image_embeds = self.ln_vision(self.visual_encoder(image))
-            image_atts = torch.ones(image_embeds.size()[:-1], dtype=torch.long).to(image.device)
+            query_output = self.Qformer.bert(
+                query_embeds=query_tokens,
+                encoder_hidden_states=image_embeds,
+                encoder_attention_mask=image_atts,
+                return_dict=True,
+            )
 
-            if self.qformer_text_input:
-                query_output = self.Qformer.bert(
-                    text_Qformer.input_ids,
-                    attention_mask=Qformer_atts,
-                    query_embeds=query_tokens,
-                    encoder_hidden_states=image_embeds,
-                    encoder_attention_mask=image_atts,
-                    return_dict=True,
-                )
-            else:
-                query_output = self.Qformer.bert(
-                    query_embeds=query_tokens,
-                    encoder_hidden_states=image_embeds,
-                    encoder_attention_mask=image_atts,
-                    return_dict=True,
-                )
-
-            inputs_llm = self.llm_proj(query_output.last_hidden_state[:,:query_tokens.size(1),:])
-            atts_llm = torch.ones(inputs_llm.size()[:-1], dtype=torch.long).to(image.device)
+        inputs_llm = self.llm_proj(query_output.last_hidden_state[:,:query_tokens.size(1),:])
+        atts_llm = torch.ones(inputs_llm.size()[:-1], dtype=torch.long).to(image.device)
 
         llm_tokens = self.llm_tokenizer(
             prompt,
@@ -403,7 +485,7 @@ class Blip2VicunaInstructQformerLLMLoRA(Blip2Base):
             inputs_embeds = torch.cat([inputs_llm, inputs_embeds], dim=1)
             attention_mask = torch.cat([atts_llm, llm_tokens.attention_mask], dim=1)
 
-            outputs = self.llm_model.generate(
+            outputs = self.llm_model.generate( # generate은 함수라서 nn.Linear 붙일 수 없음 (generate 없애야 함)
                 inputs_embeds=inputs_embeds,
                 attention_mask=attention_mask,
                 do_sample=use_nucleus_sampling,
@@ -415,8 +497,21 @@ class Blip2VicunaInstructQformerLLMLoRA(Blip2Base):
                 # eos_token_id=self.eos_token_id,
                 repetition_penalty=repetition_penalty,
                 length_penalty=length_penalty,
-                num_return_sequences=num_captions,
+                num_return_sequences=num_captions
             )
+
+            # BCE Loss
+        #     outputs = self.llm_model(
+        #         inputs_embeds=inputs_embeds,
+        #         attention_mask=attention_mask
+        #     )
+        #     logits = self.classifier(outputs.logits)
+        #     logits = logits.mean(dim=1)
+        #     predictions = (torch.sigmoid(logits) > 0.6).int().tolist() # threshold
+
+        # outputs = self.decode_multi_hot(predictions)
+        # output_text = [', '.join(text) for text in outputs]
+
 
         outputs[outputs == 0] = 2 # convert output id 0 to 2 (eos_token_id)
         output_text = self.llm_tokenizer.batch_decode(outputs, skip_special_tokens=True)
@@ -435,6 +530,9 @@ class Blip2VicunaInstructQformerLLMLoRA(Blip2Base):
         answer_list=None,
         prompt="",
         length_penalty=0,
+        do_sample=False,
+        num_captions=1,
+        top_p=0.9,
         **kwargs
     ):
         if isinstance(samples["text_input"], str):
@@ -459,18 +557,36 @@ class Blip2VicunaInstructQformerLLMLoRA(Blip2Base):
 
         samples["prompt"] = text_input
 
-        output_text = self.generate(
-            samples,
-            num_beams=num_beams,
-            max_length=max_len,
-            min_length=min_len,
-            length_penalty=length_penalty
-        )
+        if inference_method=="generate":
+            output_text = self.generate(
+                samples,
+                num_beams=num_beams,
+                max_length=max_len,
+                min_length=min_len,
+                length_penalty=length_penalty,
+                use_nucleus_sampling=do_sample,
+                num_captions=num_captions,
+                top_p=top_p
+            )
+        elif inference_method=="rank":
+            assert answer_list is not None, "answer_list must be provided for ranking"
+            num_ans_candidates = min(num_ans_candidates, len(answer_list))
+
+            return self._rank_answers(
+                samples, answer_list=answer_list, num_ans_candidates=num_ans_candidates
+            )
 
         if "apply_lemmatizer" in samples.keys() and samples["apply_lemmatizer"]:
             output_text = self._lemmatize(output_text)
 
         return output_text
+    
+    def _rank_answers(self, samples, answer_list, num_ans_candidates):
+        answer_candidates = self.tokenizer(
+            answer_list,
+            padding="longest",
+            return_tensors="pt"
+        ).to(self.device)
 
     def predict_class(
         self,

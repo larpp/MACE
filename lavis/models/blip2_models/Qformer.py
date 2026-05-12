@@ -75,7 +75,7 @@ class BertEmbeddings(nn.Module):
         # position_ids (1, len position emb) is contiguous in memory and exported when serialized
         self.register_buffer(
             "position_ids", torch.arange(config.max_position_embeddings).expand((1, -1))
-        )
+        ) # self.position_ids로 사용 가능 ([1,512] 차원에 0 부터 511 까지의 수로 이루어짐)
         self.position_embedding_type = getattr(
             config, "position_embedding_type", "absolute"
         )
@@ -97,13 +97,19 @@ class BertEmbeddings(nn.Module):
         if position_ids is None:
             position_ids = self.position_ids[
                 :, past_key_values_length : seq_length + past_key_values_length
-            ].clone()
+            ].clone() # past_key_values_length = 0 이므로 그냥 input_ids와 동일한 텐서 값
 
         if input_ids is not None:
-            embeddings = self.word_embeddings(input_ids)
-            if self.position_embedding_type == "absolute":
-                position_embeddings = self.position_embeddings(position_ids)
-                embeddings = embeddings + position_embeddings
+            if input_ids.dim() <= 2:
+                embeddings = self.word_embeddings(input_ids) # 필요없음 -> 바로 learnable vectors (prompts)로 대체
+                if self.position_embedding_type == "absolute": 
+                    position_embeddings = self.position_embeddings(position_ids)
+                    embeddings = embeddings + position_embeddings
+
+            elif input_ids.dim() == 3:
+                if self.position_embedding_type == "absolute": 
+                    position_embeddings = self.position_embeddings(position_ids)
+                    embeddings = input_ids + position_embeddings
 
             if query_embeds is not None:
                 embeddings = torch.cat((query_embeds, embeddings), dim=1)
@@ -873,12 +879,21 @@ class BertModel(BertPreTrainedModel):
 
         query_length = query_embeds.shape[1] if query_embeds is not None else 0
 
-        embedding_output = self.embeddings(
-            input_ids=input_ids,
-            position_ids=position_ids,
-            query_embeds=query_embeds,
-            past_key_values_length=past_key_values_length,
-        )
+        if input_ids.dim() <= 2:
+            embedding_output = self.embeddings(
+                input_ids=input_ids,
+                position_ids=position_ids,
+                query_embeds=query_embeds,
+                past_key_values_length=past_key_values_length,
+            )
+        elif input_ids.dim() >= 3: # CoCoOp learnable vectors
+            embedding_output = self.embeddings(
+                input_ids=input_ids,
+                position_ids=position_ids,
+                query_embeds=query_embeds,
+                past_key_values_length=past_key_values_length,
+            )
+
 
         input_shape = embedding_output.size()[:-1]
         batch_size, seq_length = input_shape

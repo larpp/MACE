@@ -15,6 +15,7 @@ from lavis.datasets.datasets.gqa_datasets import GQADataset, GQAEvalDataset
 from lavis.datasets.datasets.scienceqa_datasets import ScienceQADataset, ScienceQAEvalDataset
 from lavis.datasets.datasets.vizwiz_datasets import VizWizDataset, VizWizEvalDataset
 from lavis.datasets.datasets.iconqa_datasets import IconQADataset, IconQAEvalDataset
+from lavis.datasets.datasets.misclassifyqa_datasets import MisclassifyQADataset, MisclassifyQAEvalDataset
 
 @registry.register_builder("coco_vqa")
 class COCOVQABuilder(BaseDatasetBuilder):
@@ -84,4 +85,13 @@ class IconQABuilder(BaseDatasetBuilder):
     
     DATASET_CONFIG_DICT = {
         "default": "configs/datasets/iconqa/defaults.yaml",
+    }
+
+@registry.register_builder("misclassifyqa")
+class MisclassifyQABuilder(BaseDatasetBuilder):
+    train_dataset_cls = MisclassifyQADataset
+    eval_dataset_cls = MisclassifyQAEvalDataset
+    
+    DATASET_CONFIG_DICT = {
+        "default": "configs/datasets/misclassifyqa/defaults.yaml",
     }

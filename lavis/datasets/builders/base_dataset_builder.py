@@ -190,6 +190,8 @@ class BaseDatasetBuilder:
         ann_info = build_info.annotations
         vis_info = build_info.get(self.data_type)
 
+        step_info = self.config.step
+
         datasets = dict()
         print("get keys data")
         print(ann_info.keys())
@@ -246,6 +248,7 @@ class BaseDatasetBuilder:
                     text_processor=text_processor,
                     ann_paths=ann_paths,
                     vis_root=vis_path,
+                    step=step_info,
                     train_samples_portion=self.train_samples_portion
                 )
             else:
@@ -254,6 +257,7 @@ class BaseDatasetBuilder:
                     text_processor=text_processor,
                     ann_paths=ann_paths,
                     vis_root=vis_path,
+                    step=step_info
                 )
 
         return datasets

@@ -236,6 +236,11 @@ class BaseTask:
             # update gradients every accum_grad_iters iterations
             if (i + 1) % accum_grad_iters == 0:
                 if use_amp:
+                    for i, param_group in enumerate(optimizer.param_groups):
+                        for j, param in enumerate(param_group['params']):
+                            if param.dtype == torch.float16:
+                                optimizer.param_groups[i]['params'][j] = optimizer.param_groups[i]['params'][j].float()
+                                optimizer.param_groups[i]['params'][j].retain_grad()
                     scaler.step(optimizer)
                     scaler.update()                     
                 else:    
@@ -287,9 +292,10 @@ class BaseTask:
                     if res[remove_duplicate] not in id_list:
                         id_list.append(res[remove_duplicate])
                         result_new.append(res)
-                result = result_new
+                # result = result_new
+                result = sorted(result_new, key=lambda x: x["question_id"])
 
-            json.dump(result, open(final_result_file, "w"))
+            json.dump(result, open(final_result_file, "w"), indent=4) # 들여쓰기로 보기 좋게
             print("result file saved to %s" % final_result_file)
 
         return final_result_file

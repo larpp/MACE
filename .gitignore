@@ -152,6 +152,7 @@ debug*/
 *.dat
 *.tsv
 *.gz
+input/
 
 cache/
 
