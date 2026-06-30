@@ -66,7 +66,7 @@ sh category_prediction.sh
 ### 2. Generate Explanantion
 
 ```shell
-sh generation_explanation.sh
+sh explanation_generation.sh
 ```
 
 ## Evaluation
