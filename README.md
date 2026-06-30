@@ -74,6 +74,13 @@ sh category_prediction.sh
 ### 2. Generate Explanantion
 
 ```shell
+# lavis/projects/instructblip/train/misclassifyqa/finetune_instructblip_miclassifyqa_64_eval.yaml
+model:
+  load_finetuned: True
+  finetuned: "/home/InstructBLIP_PEFT/output/results/misclassifyqa/misclassifyqa_64/2026/checkpoint_4.pth"
+```
+
+```shell
 sh explanation_generation.sh
 ```
 
