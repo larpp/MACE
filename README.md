@@ -93,7 +93,7 @@ CUDA_VISIBLE_DEVICES=0,1,2,3 python -m torch.distributed.run --nproc_per_node=4 
 
 ## Comparison
 
-<p align=center>
+<p align=left>
 <img width="700" alt="Image" src="https://github.com/user-attachments/assets/4c34deef-7c71-43ea-aeef-d633a318cf5a" />
 </p>
 
