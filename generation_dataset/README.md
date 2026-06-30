@@ -11,7 +11,8 @@
 
 ## Mislabeling
 
-
+This step identifies whether a misclassified sample is caused by an incorrect ground-truth label (Mislabeling).<br>
+Before running the scripts, set your OpenAI API key in the source code or as an environment variable.
 
 ## Label Ambiguity
 
