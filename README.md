@@ -29,5 +29,34 @@ Training proceeds in two stages: (1) category prediction: where the model identi
 
 We train our model using 4 A6000 GPUs with 48GB memory.
 
+### Dataset
+
+```
+# lavis/config/datasets/misclassify/default.yaml
+datasets:
+  misclassifyqa:
+    # data_dir: ${env.data_dir}/datasets
+    data_type: images # [images|videos|features]
+
+    build_info:
+      # Be careful not to append minus sign (-) before split to avoid itemizing
+      annotations:
+        train:
+          storage: /home/InstructBLIP_PEFT/input/misclassifyqa/train.csv
+        # val:
+          # storage: /input/misclassify/misclassify_val.json
+        test:
+          storage: /home/InstructBLIP_PEFT/input/misclassifyqa/test.csv # 원래는 test.csv / test_data.csv
+          # storage: /home/InstructBLIP_PEFT/answer.csv
+      images:
+        storage: /home/InstructBLIP_PEFT/input
+        train:
+          storage: /home/InstructBLIP_PEFT/input
+        # val:
+          # storage: /input
+        test:
+          storage: /home/InstructBLIP_PEFT/input # 원래는 input / input_test
+```
+
 ## Evaluation
 
