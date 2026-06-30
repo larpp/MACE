@@ -57,5 +57,11 @@ datasets:
 In this case, dataset json files (```train.csv``` and ```test.csv```) should be located at ```/input/misclassifyqa```.<br>
 Image files should be located according to the ```input/{data_path}``` column in the CSV file.
 
+### Category Prediction
+
+```
+sh category prediction.sh
+```
+
 ## Evaluation
 
