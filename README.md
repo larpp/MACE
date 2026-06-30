@@ -71,3 +71,5 @@ sh explanation_generation.sh
 
 ## Evaluation
 
+You can evaluate with this command.
+
