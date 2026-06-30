@@ -53,6 +53,6 @@ The script outputs the selected categories for each sample. If no category satis
 This step generates a natural language explanation for why the image was misclassified based on the categories selected in the previous steps.
 
 ```
-ptyhon 
-python fill.py
+ptyhon generate_explanation1.py
+python generate_explanation2.py
 ```
