@@ -59,7 +59,7 @@ Image files should be located according to the ```input/{data_path}``` column in
 
 ### Category Prediction
 
-```
+```shell
 sh category prediction.sh
 ```
 
