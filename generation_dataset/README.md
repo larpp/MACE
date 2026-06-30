@@ -14,6 +14,16 @@
 This step identifies whether a misclassified sample is caused by an incorrect ground-truth label (Mislabeling).<br>
 Before running the scripts, set your OpenAI API key in the source code or as an environment variable.
 
+Run the following scripts in order.
+
+```
+python find_mis.py
+
+python find_mis2.py
+
+python find_mis3.py
+```
+
 ## Label Ambiguity
 
 
