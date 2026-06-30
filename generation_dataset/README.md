@@ -62,7 +62,9 @@ python generate_explanation2.py
 
 ### Category
 
-<img width="1615" height="2108" alt="Image" src="https://github.com/user-attachments/assets/ae665890-484f-425a-b167-d72ed8a6a71f" />
+<p align="center">
+<img width="1000" alt="Image" src="https://github.com/user-attachments/assets/ae665890-484f-425a-b167-d72ed8a6a71f" />
+</p>
 
 ### Explanation
 
