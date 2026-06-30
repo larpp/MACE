@@ -31,7 +31,7 @@ We train our model using 4 A6000 GPUs with 48GB memory.
 
 ### Dataset
 
-```
+```yaml
 # lavis/config/datasets/misclassify/default.yaml
 datasets:
   misclassifyqa:
