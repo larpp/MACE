@@ -69,5 +69,5 @@ python generate_explanation2.py
 ### Explanation
 
 <p align="center">
-<img width="700" alt="Image" src="https://github.com/user-attachments/assets/bc5a4c2b-74d2-432d-bb0d-382f91ffe2d0" />
+<img width="600" alt="Image" src="https://github.com/user-attachments/assets/bc5a4c2b-74d2-432d-bb0d-382f91ffe2d0" />
 </p>
