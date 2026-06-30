@@ -21,3 +21,9 @@ cd MACE
 pip install -r requirements.txt
 ```
 
+## Train
+
+
+
+## Evaluation
+
