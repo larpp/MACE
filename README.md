@@ -31,6 +31,8 @@ We train our model using 4 A6000 GPUs with 48GB memory.
 
 ### Dataset
 
+Datasets must be placed in the location specified in the file ```lavis/config/datasets/misclassify/default.yaml```.
+
 ```yaml
 # lavis/config/datasets/misclassify/default.yaml
 datasets:
