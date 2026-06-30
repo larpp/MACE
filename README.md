@@ -9,3 +9,9 @@ README coming soon.
 https://github.com/larpp/MACE.git
 cd MACE
 ```
+
+2. Install Package
+```
+pip install -r requirements.txt
+```
+
