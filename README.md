@@ -73,7 +73,7 @@ sh category_prediction.sh
 
 ### 2. Generate Explanantion
 
-```shell
+```yaml
 # lavis/projects/instructblip/train/misclassifyqa/finetune_instructblip_miclassifyqa_64_eval.yaml
 model:
   load_finetuned: True
