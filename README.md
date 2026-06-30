@@ -95,3 +95,4 @@ CUDA_VISIBLE_DEVICES=0,1,2,3 python -m torch.distributed.run --nproc_per_node=4 
 
 ## Acknowledgement
 
+- [InstructBLIP](https://github.com/AttentionX/InstructBLIP_PEFT): the codebase we built upon
