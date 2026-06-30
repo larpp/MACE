@@ -54,7 +54,7 @@ datasets:
           storage: /home/MACE/input
 ```
 
-In this case, dataset json files (```train.csv``` and ```test.csv```) should be located at /input/misclassifyqa<br>
+In this case, dataset json files (```train.csv``` and ```test.csv```) should be located at ```/input/misclassifyqa```.<br>
 Image files should be located according to the ```input/{data_path}``` column in the CSV file.
 
 ## Evaluation
