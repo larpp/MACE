@@ -8,6 +8,7 @@
 - [Mislabeling](#mislabeling)
 - [Label Ambiguity](#label-ambiguity)
 - [Remain Categories](#remain-category)
+- [Generate Explanation](#generate-explanation)
 
 ## Mislabeling
 
@@ -46,3 +47,5 @@ python a2e.py
 ```
 
 The script outputs the selected categories for each sample. If no category satisfies the threshold, the output is automatically assigned to **Category (h) Inherent Model Failure**.
+
+## Generate Explanation
