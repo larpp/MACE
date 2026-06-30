@@ -39,3 +39,8 @@ python label_ambiguity.py
 
 ## Remain Categories
 
+This step evaluates the remaining image-related causes (a to e) of misclassification after **(g) Mislabeling** and **(f) Label Ambiguity** have been excluded.
+
+```
+python a2e.py
+```
