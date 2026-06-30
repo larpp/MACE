@@ -31,7 +31,11 @@ python find_mis3.py
 
 ## Label Ambiguity
 
+This step determines whether the ground-truth label and the predicted label are semantically or taxonomically ambiguous.
 
+```
+python label_ambiguity.py
+```
 
 ## Remain Categories
 
