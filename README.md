@@ -101,6 +101,12 @@ CUDA_VISIBLE_DEVICES=0,1,2,3 python -m torch.distributed.run --nproc_per_node=4 
 <img width="700" alt="Image" src="https://github.com/user-attachments/assets/4c34deef-7c71-43ea-aeef-d633a318cf5a" />
 </p>
 
+## Misclassification-Aware Metric
+
+<p align=center>
+<img width="800" alt="Image" src="https://github.com/user-attachments/assets/52fa73b2-1341-45d0-8819-b1587ff420e2" />
+</p>
+
 ## Citation
 
 
