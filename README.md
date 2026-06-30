@@ -35,8 +35,7 @@ We train our model using 4 A6000 GPUs with 48GB memory.
 # lavis/config/datasets/misclassify/default.yaml
 datasets:
   misclassifyqa:
-    # data_dir: ${env.data_dir}/datasets
-    data_type: images # [images|videos|features]
+    data_type: images
 
     build_info:
       # Be careful not to append minus sign (-) before split to avoid itemizing
@@ -46,8 +45,7 @@ datasets:
         # val:
           # storage: /input/misclassify/misclassify_val.json
         test:
-          storage: /home/InstructBLIP_PEFT/input/misclassifyqa/test.csv # 원래는 test.csv / test_data.csv
-          # storage: /home/InstructBLIP_PEFT/answer.csv
+          storage: /home/InstructBLIP_PEFT/input/misclassifyqa/test.csv
       images:
         storage: /home/InstructBLIP_PEFT/input
         train:
@@ -55,7 +53,7 @@ datasets:
         # val:
           # storage: /input
         test:
-          storage: /home/InstructBLIP_PEFT/input # 원래는 input / input_test
+          storage: /home/InstructBLIP_PEFT/input
 ```
 
 ## Evaluation
