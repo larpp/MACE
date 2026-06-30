@@ -5,9 +5,9 @@
 </p>
 
 ## Content
-- [Mislabeling](mislabeling)
-- [Label Ambiguity](labelambiguity)
-- [Remain Categories](remaincategory)
+- [Mislabeling](#mislabeling)
+- [Label Ambiguity](#labelambiguity)
+- [Remain Categories](#remaincategory)
 
 ## Mislabeling
 
