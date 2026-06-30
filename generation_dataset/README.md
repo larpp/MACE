@@ -24,6 +24,11 @@ python find_mis2.py
 python find_mis3.py
 ```
 
+1. Generate an image caption, detected objects, and a confidence score indicating whether the ground-truth label exists in the image using GPT-4o.
+2. To improve reliability, the prompt is executed multiple times using **Self-Consistency**.
+3. The confidence score that appears **most frequently** across all responses is selected as the final result (majority vote).
+4. If the final confidence score is **greater than 0.6**, the sample is assigned to the **(g) Mislabeling** category. Otherwise, the sample proceeds to the **Label Ambiguity** step.
+
 ## Label Ambiguity
 
 
