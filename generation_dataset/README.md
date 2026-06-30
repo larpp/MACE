@@ -44,3 +44,5 @@ This step evaluates the remaining image-related causes (a to e) of misclassifica
 ```
 python a2e.py
 ```
+
+The script outputs the selected categories for each sample. If no category satisfies the threshold, the output is automatically assigned to **Category (h) Inherent Model Failure**.
