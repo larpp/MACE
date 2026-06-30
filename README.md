@@ -41,19 +41,19 @@ datasets:
       # Be careful not to append minus sign (-) before split to avoid itemizing
       annotations:
         train:
-          storage: /home/InstructBLIP_PEFT/input/misclassifyqa/train.csv
+          storage: /home/MACE/input/misclassifyqa/train.csv
         # val:
           # storage: /input/misclassify/misclassify_val.json
         test:
-          storage: /home/InstructBLIP_PEFT/input/misclassifyqa/test.csv
+          storage: /home/MACE/input/misclassifyqa/test.csv
       images:
-        storage: /home/InstructBLIP_PEFT/input
+        storage: /home/MACE/input
         train:
-          storage: /home/InstructBLIP_PEFT/input
+          storage: /home/MACE/input
         # val:
           # storage: /input
         test:
-          storage: /home/InstructBLIP_PEFT/input
+          storage: /home/MACE/input
 ```
 
 ## Evaluation
