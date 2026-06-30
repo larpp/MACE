@@ -42,8 +42,6 @@ datasets:
       annotations:
         train:
           storage: /home/MACE/input/misclassifyqa/train.csv
-        # val:
-          # storage: /input/misclassify/misclassify_val.json
         test:
           storage: /home/MACE/input/misclassifyqa/test.csv
       images:
