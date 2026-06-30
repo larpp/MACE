@@ -6,7 +6,7 @@ Recent advances in computer vision have raised interest not only in how models a
 
 ## Contents
 
-[Install](#install)
+- [Install](#install)
 
 ## Install
 
