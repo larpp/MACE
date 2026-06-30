@@ -49,3 +49,10 @@ python a2e.py
 The script outputs the selected categories for each sample. If no category satisfies the threshold, the output is automatically assigned to **Category (h) Inherent Model Failure**.
 
 ## Generate Explanation
+
+This step generates a natural language explanation for why the image was misclassified based on the categories selected in the previous steps.
+
+```
+ptyhon 
+python fill.py
+```
