@@ -48,8 +48,6 @@ datasets:
         storage: /home/MACE/input
         train:
           storage: /home/MACE/input
-        # val:
-          # storage: /input
         test:
           storage: /home/MACE/input
 ```
