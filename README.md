@@ -25,7 +25,7 @@ pip install -r requirements.txt
 
 ## Train
 
-
+We train our model using 4 A6000 GPUs with 48GB memory.
 
 ## Evaluation
 
