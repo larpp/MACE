@@ -5,7 +5,7 @@ README coming soon.
 # Install
 
 1. Clone this repository and navigate to MACE folder.
-```
-  https://github.com/larpp/MACE.git
-  cd MACE
+```bash
+https://github.com/larpp/MACE.git
+cd MACE
 ```
