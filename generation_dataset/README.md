@@ -6,8 +6,8 @@
 
 ## Content
 - [Mislabeling](#mislabeling)
-- [Label Ambiguity](#labelambiguity)
-- [Remain Categories](#remaincategory)
+- [Label Ambiguity](#label-ambiguity)
+- [Remain Categories](#remain-category)
 
 ## Mislabeling
 
