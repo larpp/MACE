@@ -3,7 +3,7 @@
 ## Overview
 
 <p align=center>
-<img width="700" alt="Image" src="https://github.com/user-attachments/assets/739ef6f8-58fb-4fbb-89b3-86cd29461c04" />
+<img width="800" alt="Image" src="https://github.com/user-attachments/assets/739ef6f8-58fb-4fbb-89b3-86cd29461c04" />
 </p>
 
 This work introduces MACE, a misclassification-aware framework for evaluating image classification models beyond accuracy. Instead of only counting wrong predictions, MACE diagnoses why each error occurs and explains it in natural language. It defines eight failure categories, including visual resemblance, occlusion, contextual confusion, inclusion of predicted label, image quality issues, label ambiguity, mislabeling, and inherent model failure. Using GPT-4o as a structured annotator, the framework assigns error categories, generates detailed explanations, and builds a misclassification explanation dataset for instruction-tuning multimodal LLMs such as InstructBLIP and LLaVA-1.5. The results show that MACE can reveal dataset-related issues, model-specific weaknesses, and more realistic evaluation metrics for reliable model selection.
