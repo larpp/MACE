@@ -25,6 +25,8 @@ pip install -r requirements.txt
 
 ## Train
 
+Training proceeds in two stages: (1) category prediction: where the model identifies the cause of a misclassification; (2) explanation generation: where the model explains the reason for the error in natural language based on the predicted category.
+
 We train our model using 4 A6000 GPUs with 48GB memory.
 
 ## Evaluation
