@@ -6,6 +6,6 @@ README coming soon.
 
 1. Clone this repository and navigate to MACE folder.
 ```
-git clone https://github.com/AttentionX/InstructBLIP_PEFT.git
-cd MACE
+  https://github.com/larpp/MACE.git
+  cd MACE
 ```
