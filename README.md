@@ -91,6 +91,8 @@ CUDA_VISIBLE_DEVICES=0,1,2,3 python -m torch.distributed.run --nproc_per_node=4 
 --cfg-path lavis/projects/instructblip/train/misclassifyqa/finetune_instructblip_misclassifyqa_64_2_eval.yaml
 ```
 
+<img width="2328" height="1360" alt="Image" src="https://github.com/user-attachments/assets/4c34deef-7c71-43ea-aeef-d633a318cf5a" />
+
 ## Citation
 
 
