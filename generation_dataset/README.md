@@ -63,9 +63,11 @@ python generate_explanation2.py
 ### Category
 
 <p align="center">
-<img width="800" alt="Image" src="https://github.com/user-attachments/assets/ae665890-484f-425a-b167-d72ed8a6a71f" />
+<img width="600" alt="Image" src="https://github.com/user-attachments/assets/ae665890-484f-425a-b167-d72ed8a6a71f" />
 </p>
 
 ### Explanation
 
-<img width="1442" height="2155" alt="Image" src="https://github.com/user-attachments/assets/bc5a4c2b-74d2-432d-bb0d-382f91ffe2d0" />
+<p align="center">
+<img width="800" alt="Image" src="https://github.com/user-attachments/assets/bc5a4c2b-74d2-432d-bb0d-382f91ffe2d0" />
+</p>
