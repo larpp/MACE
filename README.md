@@ -122,7 +122,15 @@ CUDA_VISIBLE_DEVICES=0,1,2,3 python -m torch.distributed.run --nproc_per_node=4 
 ## Citation
 
 ```
-
+@inproceedings{kim2027misclassification,
+  title={A Misclassification-Aware Framework for Image Classification Evaluation},
+  author={Kim, Gyewan and Hyun, Yoonsuk},
+  booktitle={Pattern Recognition},
+  pages={619--634},
+  year={2027},
+  publisher={Springer Nature Switzerland},
+  doi={10.1007/978-3-032-31404-8_41}
+}
 ```
 
 ## Acknowledgement
